@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, Text, Enum
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_basefrom sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import enum
 
