@@ -1,10 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 from database import UserRole, TransactionType
 
-
-# ─── Auth ───────────────────────────────────────────
 
 class LoginRequest(BaseModel):
     email: str
@@ -14,8 +12,6 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-
-# ─── Users ──────────────────────────────────────────
 
 class UserCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -40,10 +36,8 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
-# ─── Financial Records ───────────────────────────────
-
 class RecordCreate(BaseModel):
-    amount: float = Field(..., gt=0, description="Must be greater than 0")
+    amount: float = Field(..., gt=0)
     type: TransactionType
     category: str = Field(..., min_length=2, max_length=100)
     date: datetime
@@ -72,8 +66,6 @@ class RecordResponse(BaseModel):
         from_attributes = True
 
 
-# ─── Dashboard ───────────────────────────────────────
-
 class CategorySummary(BaseModel):
     category: str
     total: float
@@ -92,10 +84,8 @@ class DashboardSummary(BaseModel):
     recent_activity: List[RecordResponse]
 
 
-# ─── Pagination ──────────────────────────────────────
-
 class PaginatedRecords(BaseModel):
     total: int
     page: int
     page_size: int
-    records: list[RecordResponse]
+    records: List[RecordResponse]
