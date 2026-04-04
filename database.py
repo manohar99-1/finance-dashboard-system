@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, Text, Enum
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, DateTime, Text
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
 import enum
@@ -14,7 +14,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-# --- Enums ---
 class UserRole(str, enum.Enum):
     viewer = "viewer"
     analyst = "analyst"
@@ -25,7 +24,6 @@ class TransactionType(str, enum.Enum):
     expense = "expense"
 
 
-# --- User Model ---
 class User(Base):
     __tablename__ = "users"
 
@@ -38,23 +36,21 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
-# --- Financial Record Model ---
 class FinancialRecord(Base):
     __tablename__ = "financial_records"
 
     id = Column(Integer, primary_key=True, index=True)
     amount = Column(Float, nullable=False)
-    type = Column(String(10), nullable=False)  # income or expense
+    type = Column(String(10), nullable=False)
     category = Column(String(100), nullable=False)
     date = Column(DateTime, nullable=False)
     notes = Column(Text, nullable=True)
-    created_by = Column(Integer, nullable=False)  # user id
+    created_by = Column(Integer, nullable=False)
     is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
-# --- DB Session Dependency ---
 def get_db():
     db = SessionLocal()
     try:
