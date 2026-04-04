@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, ListOptional
 from datetime import datetime
 from database import UserRole, TransactionType
 
@@ -88,8 +88,8 @@ class DashboardSummary(BaseModel):
     total_expenses: float
     net_balance: float
     total_records: int
-    category_totals: list[CategorySummary]
-    recent_activity: list[RecordResponse]
+    category_totals: List[CategorySummary]
+    recent_activity: List[RecordResponse]
 
 
 # ─── Pagination ──────────────────────────────────────
