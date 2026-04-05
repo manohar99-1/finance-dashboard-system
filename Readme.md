@@ -1,44 +1,51 @@
 # Finance Dashboard API
 
-A backend system for managing financial records with role-based access control, built with FastAPI and SQLite.
+A backend API for managing financial records with role-based access control. Built with FastAPI, SQLite, and JWT authentication.
 
-## Live Demo
+## Live
 
-- **API Base URL:** `https://finance-dashboard.onrender.com`
-- **Interactive Docs (Swagger UI):** `https://finance-dashboard.onrender.com/docs`
-
----
-
-## Tech Stack
-
-| Layer | Tech |
-|-------|------|
-| Language | Python 3.11 |
-| Framework | FastAPI |
-| Database | SQLite (via SQLAlchemy ORM) |
-| Auth | JWT (python-jose + passlib bcrypt) |
-| Rate Limiting | slowapi |
-| Docs | Swagger UI (auto-generated) |
-| Hosting | Render.com |
+- API: https://finance-dashboard-system-duhm.onrender.com
+- Docs: https://finance-dashboard-system-duhm.onrender.com/docs
 
 ---
 
-## Features
+## Stack
 
-- JWT Authentication with Bearer tokens
-- Role-based access control (Viewer / Analyst / Admin)
-- Financial records CRUD with soft delete and restore
-- Dashboard summary APIs (totals, trends, category breakdown)
-- Filtering by type, category, date range, and search keyword
-- Pagination on all record listings
-- Input validation with meaningful error responses
-- Auto-seeded test users and sample data on startup
-- Rate limiting on auth endpoints
-- Interactive Swagger UI documentation
+- Python 3.11 + FastAPI
+- SQLite via SQLAlchemy
+- JWT auth with python-jose and passlib
+- Rate limiting with slowapi
+- Hosted on Render.com
 
 ---
 
-## Default Test Users
+## Getting Started
+
+```bash
+git clone https://github.com/manohar99-1/finance-dashboard-system.git
+cd finance-dashboard-system
+
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Open http://localhost:8000/docs to explore the API.
+
+---
+
+## How to Test
+
+The easiest way is through the Swagger UI at /docs.
+
+1. Use POST /auth/login with one of the test accounts below
+2. Copy the access_token from the response
+3. Click Authorize at the top of the page, paste the token, and click Authorize
+4. Now you can call any endpoint
+
+**Test accounts**
 
 | Email | Password | Role |
 |-------|----------|------|
@@ -48,165 +55,104 @@ A backend system for managing financial records with role-based access control, 
 
 ---
 
-## Local Setup
+## What It Does
 
-### 1. Clone the repository
+The system has three roles with different levels of access.
 
-```bash
-git clone https://github.com/your-username/finance-dashboard.git
-cd finance-dashboard
-```
+**Viewers** can see records and recent activity but nothing else.
 
-### 2. Create a virtual environment
+**Analysts** get everything a viewer can see plus access to the dashboard summaries — totals, trends, and category breakdowns.
 
-```bash
-python -m venv venv
-source venv/bin/activate        # Mac/Linux
-venv\Scripts\activate           # Windows
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Run the server
-
-```bash
-uvicorn main:app --reload
-```
-
-### 5. Open API docs
-
-```
-http://localhost:8000/docs
-```
+**Admins** have full access. They can create, update, and delete records, manage users, and see everything.
 
 ---
 
-## How to Authenticate
+## Endpoints
 
-1. Go to `/docs`
-2. Click `POST /auth/login`
-3. Enter email and password
-4. Copy the `access_token` from the response
-5. Click the **Authorize** button at the top of the page
-6. Paste the token and click **Authorize**
-7. All subsequent requests will use this token
+**Auth**
+- POST /auth/login — get a JWT token
 
----
+**Users** (Admin only except profile)
+- POST /users/ — create user
+- GET /users/ — list all users
+- GET /users/me/profile — your own profile
+- GET /users/{id} — get user by ID
+- PATCH /users/{id} — update role or status
+- DELETE /users/{id} — delete user
 
-## API Endpoints
+**Financial Records**
+- POST /records/ — create record (Admin)
+- GET /records/ — list records with filters and pagination (All)
+- GET /records/{id} — get single record (All)
+- PUT /records/{id} — update record (Admin)
+- DELETE /records/{id} — soft delete (Admin)
+- PATCH /records/{id}/restore — restore deleted record (Admin)
 
-### Auth
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/auth/login` | Public | Login and get JWT token |
+**Dashboard**
+- GET /dashboard/summary — totals and category breakdown (Analyst + Admin)
+- GET /dashboard/trends — monthly income vs expense (Analyst + Admin)
+- GET /dashboard/categories — category-wise totals (Analyst + Admin)
+- GET /dashboard/recent — recent activity (All)
 
-### Users
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/users/` | Admin | Create a new user |
-| GET | `/users/` | Admin | Get all users (filter by role, status) |
-| GET | `/users/me/profile` | All | Get your own profile |
-| GET | `/users/{id}` | Admin | Get user by ID |
-| PATCH | `/users/{id}` | Admin | Update user role or status |
-| DELETE | `/users/{id}` | Admin | Delete a user |
+**Filtering on GET /records/**
 
-### Financial Records
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/records/` | Admin | Create a financial record |
-| GET | `/records/` | All | Get all records with filters + pagination |
-| GET | `/records/{id}` | All | Get a single record |
-| PUT | `/records/{id}` | Admin | Update a record |
-| DELETE | `/records/{id}` | Admin | Soft delete a record |
-| PATCH | `/records/{id}/restore` | Admin | Restore a soft deleted record |
-
-### Dashboard
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | `/dashboard/summary` | Analyst + Admin | Total income, expenses, net balance, categories |
-| GET | `/dashboard/trends` | Analyst + Admin | Monthly income vs expense trends |
-| GET | `/dashboard/categories` | Analyst + Admin | Category-wise totals |
-| GET | `/dashboard/recent` | All | Recent financial activity |
-
----
-
-## Query Parameters
-
-### GET /records/
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| type | string | Filter by `income` or `expense` |
-| category | string | Filter by category name |
-| search | string | Search in notes or category |
-| date_from | datetime | Start date filter |
-| date_to | datetime | End date filter |
-| page | int | Page number (default: 1) |
-| page_size | int | Records per page (default: 10, max: 100) |
-
----
-
-## Role Permissions
-
-| Endpoint | Viewer | Analyst | Admin |
-|----------|--------|---------|-------|
-| Login | ✅ | ✅ | ✅ |
-| View records | ✅ | ✅ | ✅ |
-| View recent activity | ✅ | ✅ | ✅ |
-| View dashboard summary | ❌ | ✅ | ✅ |
-| View trends & categories | ❌ | ✅ | ✅ |
-| Create / Update / Delete records | ❌ | ❌ | ✅ |
-| Manage users | ❌ | ❌ | ✅ |
+You can filter by type (income/expense), category, keyword search, and date range. Pagination is supported with page and page_size parameters.
 
 ---
 
 ## Project Structure
 
 ```
-finance-dashboard/
-├── main.py              # App entry point, startup seed, auth route
-├── database.py          # SQLite engine, ORM models, DB session
-├── models.py            # Pydantic schemas for request/response validation
-├── auth.py              # JWT creation, password hashing, user seeding
-├── middleware.py        # Role-based access control dependencies
+finance-dashboard-system/
+├── main.py          # entry point, lifespan, auth route, seed data
+├── database.py      # SQLAlchemy models and DB setup
+├── models.py        # Pydantic schemas for validation
+├── auth.py          # JWT logic, password hashing, user seeding
+├── middleware.py    # role-based access control
 ├── routers/
-│   ├── users.py         # User management endpoints
-│   ├── records.py       # Financial records CRUD endpoints
-│   └── dashboard.py     # Summary and analytics endpoints
-├── requirements.txt
-└── README.md
+│   ├── users.py
+│   ├── records.py
+│   └── dashboard.py
+└── requirements.txt
 ```
 
 ---
 
-## Assumptions Made
+## Notes and Assumptions
 
-- Amounts are always positive. The `type` field (income/expense) determines direction.
-- Soft delete is used for records — deleted records are hidden from all GET endpoints but can be restored by an admin.
-- Admin cannot deactivate or delete their own account to prevent lockout.
-- SQLite resets on Render free tier restarts — the seed script auto-repopulates tables and test data on every startup.
+A few decisions I made while building this:
+
+- Record amounts are always stored as positive numbers. The type field (income or expense) handles the direction. This keeps aggregation logic simple.
+
+- Deleted records aren't removed from the database. They're marked with is_deleted=True so they can be restored by an admin if needed.
+
+- Admins can't deactivate or delete their own account. This prevents accidental lockout.
+
+- SQLite on Render's free tier resets when the server spins down. To handle this, the app automatically recreates tables and seeds default users and sample records on every startup.
+
 - JWT tokens expire after 24 hours.
-- Rate limiting is applied on the login endpoint (10 requests/minute per IP).
+
+- Login is rate limited to 10 requests per minute per IP.
 
 ---
 
-## Deployment (Render.com)
+## Deployment Notes
 
-1. Push code to GitHub
-2. Go to [render.com](https://render.com) and create a new **Web Service**
-3. Connect your GitHub repository
-4. Set the following:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port 10000`
-5. Click **Deploy**
-6. Your API will be live at `https://your-service-name.onrender.com`
+This is deployed on Render's free tier using a public GitHub repo. The build command is:
+
+```
+pip install -r requirements.txt
+```
+
+Start command:
+
+```
+uvicorn main:app --host 0.0.0.0 --port 10000
+```
+
+No environment variables are required to run it.
 
 ---
 
-## Author
-
-**Manohar Poleboina**
-B.Tech Computer Science — Vignan Institute of Technology and Science, Hyderabad
+Manohar Poleboina
+B.Tech CSE — Vignan Institute of Technology and Science, Hyderabad
